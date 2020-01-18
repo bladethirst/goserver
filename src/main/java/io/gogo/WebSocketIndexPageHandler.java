@@ -18,33 +18,37 @@ import io.netty.util.CharsetUtil;
 
 public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-		if (!(req.decoderResult().isSuccess())) {
+		if (!req.decoderResult().isSuccess()) {
 			sendHttpResponse(ctx, req,
 					new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+
 			return;
 		}
 
 		if (req.method() != HttpMethod.GET) {
 			sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
+
 			return;
 		}
 
 		if ("/".equals(req.uri())) {
 			ByteBuf content = Unpooled.copiedBuffer("Welcome GoGo Server " + GoGoServer.version, CharsetUtil.US_ASCII);
-			FullHttpResponse res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, content);
+			DefaultFullHttpResponse defaultFullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+					HttpResponseStatus.OK, content);
 
-			res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
-			HttpUtil.setContentLength(res, content.readableBytes());
+			defaultFullHttpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+			HttpUtil.setContentLength(defaultFullHttpResponse, content.readableBytes());
 
-			sendHttpResponse(ctx, req, res);
+			sendHttpResponse(ctx, req, defaultFullHttpResponse);
 		} else if ("/getGoGoServerVersion".equals(req.uri())) {
 			ByteBuf content = Unpooled.copiedBuffer(GoGoServer.version, CharsetUtil.US_ASCII);
-			FullHttpResponse res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, content);
+			DefaultFullHttpResponse defaultFullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+					HttpResponseStatus.OK, content);
 
-			res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
-			HttpUtil.setContentLength(res, content.readableBytes());
+			defaultFullHttpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+			HttpUtil.setContentLength(defaultFullHttpResponse, content.readableBytes());
 
-			sendHttpResponse(ctx, req, res);
+			sendHttpResponse(ctx, req, defaultFullHttpResponse);
 		} else {
 			sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND));
 		}
@@ -63,7 +67,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
 		}
 
 		ChannelFuture f = ctx.channel().writeAndFlush(res);
-		if ((!(HttpUtil.isKeepAlive(req))) || (res.status().code() != 200))
+		if (!HttpUtil.isKeepAlive(req) || res.status().code() != 200)
 			f.addListener(ChannelFutureListener.CLOSE);
 	}
 }

@@ -8,42 +8,39 @@ public class GoGoServer {
 	public static boolean isDevMode = false;
 	public static String version = "1.8.0";
 	public static boolean enableSSL = true;
+	public static String port = "8080";
 	public static String sslPort = "8443";
 
 	public static EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 	public static EventLoopGroup workerGroup = new NioEventLoopGroup();
 
 	public static void main(String[] args) {
-		String ip = System.getenv("OPENSHIFT_DIY_IP");
-		String port = System.getenv("PORT");
-		if ((!(StringUtil.isNullOrEmpty(ip))) || (!(StringUtil.isNullOrEmpty(port)))) {
+		String env_ip = System.getenv("OPENSHIFT_DIY_IP");
+		String env_port = System.getenv("PORT");
+		if (!StringUtil.isNullOrEmpty(env_ip) || !StringUtil.isNullOrEmpty(env_port)) {
 			enableSSL = false;
 		}
-		if (StringUtil.isNullOrEmpty(port)) {
-			port = "8080";
+		if (!StringUtil.isNullOrEmpty(env_port)) {
+			port = env_port;
+
 		} else if (args.length > 0) {
 			try {
 				Integer.valueOf(args[0]);
 				port = args[0];
-			} catch (Exception e) {
-				port = "8080";
+			} catch (Exception exception) {
+			}
+
+			try {
+				Integer.valueOf(args[1]);
+				sslPort = args[1];
+			} catch (Exception exception) {
 			}
 		}
 
-		final String fPort = port;
-
-		new Thread(new Runnable() {
-			public void run() {
-				new WebSocketServer(Integer.valueOf(fPort.trim()).intValue()).start();
-			}
-		}).start();
+		(new WebSocketServer(Integer.valueOf(port.trim()).intValue())).start();
 
 		if (enableSSL) {
-			new Thread(new Runnable() {
-				public void run() {
-					new WebSocketWithSSLServer(Integer.valueOf(GoGoServer.sslPort.trim()).intValue()).start();
-				}
-			}).start();
+			(new WebSocketWithSSLServer(Integer.valueOf(sslPort.trim()).intValue())).start();
 		}
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {

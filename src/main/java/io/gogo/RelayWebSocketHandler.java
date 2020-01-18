@@ -1,23 +1,24 @@
 package io.gogo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import io.util.ChannelUtils;
 import io.util.Console;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class RelayWebSocketHandler extends ChannelInboundHandlerAdapter {
-	private Channel clientChannel = null;
-	private List<ByteBuf> byteBufList = new ArrayList<>();
+	private Channel clientChannel;
+	private List<ByteBuf> byteBufList;
 
 	public RelayWebSocketHandler(Channel channel) {
+		this.byteBufList = new ArrayList<ByteBuf>();
 		this.clientChannel = channel;
 	}
 
@@ -37,7 +38,7 @@ public final class RelayWebSocketHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-		if (evt instanceof IdleStateEvent) {
+		if (evt instanceof io.netty.handler.timeout.IdleStateEvent) {
 			releaseCollectedByteBuf();
 			ChannelUtils.closeOnFlush(ctx.channel());
 			ChannelUtils.closeOnFlush(this.clientChannel);
@@ -47,7 +48,7 @@ public final class RelayWebSocketHandler extends ChannelInboundHandlerAdapter {
 		}
 	}
 
-	public void channelInactive(ChannelHandlerContext ctx) {
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		releaseCollectedByteBuf();
 		ChannelUtils.closeOnFlush(this.clientChannel);
 	}

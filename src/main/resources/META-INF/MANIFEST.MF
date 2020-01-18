@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Built-By: Le'novo
+Created-By: Apache Maven
+Build-Jdk: 1.8.0_111
+Main-Class: io.gogo.GoGoServer
+
